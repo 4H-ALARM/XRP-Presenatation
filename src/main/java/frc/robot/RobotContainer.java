@@ -9,6 +9,7 @@ import frc.robot.commands.Arm0;
 import frc.robot.commands.Arm90;
 import frc.robot.commands.DriveForward;
 import frc.robot.commands.DriveTime;
+import frc.robot.commands.GyroTurn;
 import frc.robot.commands.StopAtWall;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DistanceSubsystem;
@@ -39,6 +40,7 @@ public class RobotContainer {
   private final Arm0 arm0 = new Arm0(armSubsystem);
   private final Arm90 arm90 = new Arm90(armSubsystem);
   private final StopAtWall stopAtWall= new StopAtWall(m_xrpDrivetrain, distanceSubsystem);
+  private final GyroTurn gyroTurn = new GyroTurn(m_xrpDrivetrain, 90);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -59,6 +61,8 @@ public class RobotContainer {
     controller.leftBumper().onTrue(arm0);
     controller.leftBumper().onTrue(arm90);
     controller.rightTrigger().onTrue(stopAtWall);
+
+    controller.leftTrigger().onTrue(gyroTurn);
   }
 
   /**
