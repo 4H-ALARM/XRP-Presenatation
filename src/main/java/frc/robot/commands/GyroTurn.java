@@ -7,37 +7,43 @@ import edu.wpi.first.wpilibj.xrp.XRPGyro;
 
 
 public class GyroTurn extends Command {
-    private final XRPDrivetrain drive;
-    private final XRPGyro gyro = new XRPGyro();
-    private final PIDController controller;
-    private final double targetAngle;
+  private final XRPDrivetrain drivetrain;
+  private final XRPGyro gyro = new XRPGyro();
+  private final double targetAngle;
+  private final PIDController pid = new PIDController(0.02, 0.0, 0.001);
 
-    public GyroTurn(XRPDrivetrain sDrivetrain, double angle) {
-        this.drive = sDrivetrain;
-        this.targetAngle = angle;
-        controller = new PIDController(0.03, 0.0, 0.002);
-        addRequirements(drive);
-    }
+  // Feedforward constants
+  private final double kS = 0.15; // static friction voltage
+  private final double kV = 0.0;  // optional if you want velocity scaling
 
-    @Override
-    public void initialize() {
-        gyro.reset();
-        controller.setSetpoint(targetAngle);
-    }
+  public GyroTurn(XRPDrivetrain drivetrain, double angleDegrees) {
+      this.drivetrain = drivetrain;
+      this.targetAngle = angleDegrees;
+      addRequirements(drivetrain);
+      pid.setTolerance(2.0);
+  }
 
-    @Override
-    public void execute() {
-        double output = controller.calculate(gyro.getAngle());
-        drive.arcadeDrive(0, output); // Rotate in place
-    }
+  @Override
+  public void execute() {
+      double error = targetAngle - gyro.getAngle();
+      double pidOutput = pid.calculate(gyro.getAngle(), targetAngle);
 
-    @Override
-    public void end(boolean interrupted) {
-        drive.arcadeDrive(0, 0);
-    }
+      // Add static friction feedforward
+      double output = pidOutput;
+      if (Math.abs(pidOutput) > 0.01) {
+          output += Math.copySign(kS, pidOutput);
+      }
 
-    @Override
-    public boolean isFinished() {
-        return Math.abs(targetAngle - gyro.getAngle()) < 2.0; // within 2 degrees
-    }
+      drivetrain.arcadeDrive(0, output);
+  }
+
+  @Override
+  public boolean isFinished() {
+      return pid.atSetpoint();
+  }
+
+  @Override
+  public void end(boolean interrupted) {
+      drivetrain.arcadeDrive(0, 0);
+  }
 }
