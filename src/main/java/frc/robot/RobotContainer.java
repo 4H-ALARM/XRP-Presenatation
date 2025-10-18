@@ -5,8 +5,11 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.XboxController;
+import frc.robot.commands.Arm0;
+import frc.robot.commands.Arm90;
 import frc.robot.commands.DriveForward;
 import frc.robot.commands.DriveTime;
+import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.XRPDrivetrain;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -23,11 +26,16 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final XRPDrivetrain m_xrpDrivetrain = new XRPDrivetrain();
 
+  private final ArmSubsystem armSubsystem = new ArmSubsystem();
+
   private final CommandXboxController controller = new CommandXboxController(0);
 
   private final DriveForward driveForward = new DriveForward(m_xrpDrivetrain);
 
   private final DriveTime driveTime = new DriveTime(m_xrpDrivetrain, 0.5, 2);
+
+  private final Arm0 arm0 = new Arm0(armSubsystem);
+  private final Arm90 arm90 = new Arm90(armSubsystem);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -45,11 +53,14 @@ public class RobotContainer {
     m_xrpDrivetrain.setDefaultCommand(Commands.run(() ->m_xrpDrivetrain.arcadeDrive(controller.getLeftY(), controller.getRightX()), m_xrpDrivetrain));
     controller.a().whileTrue(driveForward);
     controller.b().onTrue(driveTime);
+    controller.leftBumper().onTrue(arm0);
+    controller.leftBumper().onTrue(arm90);
   }
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *
+   * 
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
